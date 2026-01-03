@@ -71,7 +71,7 @@ configurations.all {
 }
 
 static String[] getVersionsFromWeb(boolean onSaturn) {
-  String[] urls = ["https://api.battlecode.org/api/episode/e/bc25java/?format=json"]
+  String[] urls = ["https://api.battlecode.org/api/episode/e/bc26/?format=json"]
   //String[] urls = ["https://api.battlecode.org/api/episode/e/bc24/?format=json"]
   String engineVersion = null
   String clientVersion = null
@@ -195,10 +195,10 @@ configurations {
 
 def os = System.getProperty("os.name").toLowerCase()
 def clientName = os.startsWith('windows')
-                    ? 'battlecode25-client-win-'
+                    ? 'battlecode26-client-win-'
                     : os.startsWith('mac')
-                        ? 'battlecode25-client-mac-'
-                        : 'battlecode25-client-linux-'
+                        ? 'battlecode26-client-mac-'
+                        : 'battlecode26-client-linux-'
 def clientType = project.findProperty("compatibilityClient").toBoolean()
                     ? "electron"
                     : "tauri"
@@ -207,14 +207,14 @@ dependencies {
   testImplementation group: 'junit', name: 'junit', version: '4.13.2'
 
   // The Battlecode engine.
-  implementation group: 'org.battlecode', name: 'battlecode25-java', version: versions.battlecodeEngine
+  implementation group: 'org.battlecode', name: 'battlecode26-java', version: versions.battlecodeEngine
 
   // The Battlecode client.
   client group: 'org.battlecode', name: clientName + clientType, version: versions.battlecodeClient
 
   // Scala
-  implementation group: 'org.scala-lang', name: 'scala-library', version: '2.11.7'
-  testImplementation group: 'org.scalatest', name: 'scalatest_2.11', version: '3.0.0'
+  implementation group: 'org.scala-lang', name: 'scala-library', version: '2.13.11'
+  testImplementation group: 'org.scalatest', name: 'scalatest_2.13', version: '3.2.9'
 }
 
 
@@ -275,7 +275,7 @@ def truncateString(String input, int maxLength) {
 
 def defaultClassLocation = sourceSets.main.output.classesDirs.getAsPath()
 def defaultReplayName = truncateString(project.property('teamA') + '-vs-' + project.property('teamB') + '-on-' + project.property('maps'), 80)
-def defaultReplayFile = 'matches/' + defaultReplayName + '.bc25'
+def defaultReplayFile = 'matches/' + defaultReplayName + '.bc26'
 
 task run(type: JavaExec) {
   description 'Runs a match without starting the client.'
@@ -339,13 +339,13 @@ task listMaps {
   doLast {
     sourceSets.main.compileClasspath.each {
       logger.debug(it.name)
-      if (it.toString().contains('battlecode25-')) {
+      if (it.toString().contains('battlecode26-')) {
         FileCollection fc = zipTree(it)
         fc += fileTree(new File(project.projectDir, 'maps'))
         fc.each {
           String fn = it.getName()
-          if (fn.endsWith('.map25')) {
-            logger.quiet(fn.substring(0, fn.indexOf('.map25')))
+          if (fn.endsWith('.map26')) {
+            logger.quiet(fn.substring(0, fn.indexOf('.map26')))
           }
         }
       }

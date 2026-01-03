@@ -1,6 +1,6 @@
-# Battlecode 2025 Scaffold - Java
+# Battlecode 2026 Scaffold - Java
 
-This is the Battlecode 2025 Java scaffold, containing an `examplefuncsplayer`. Read https://play.battlecode.org/bc25java/quick_start !
+This is the Battlecode 2026 Java scaffold, containing an `examplefuncsplayer`. Read https://play.battlecode.org/bc26/quick_start !
 
 
 ### Project Structure

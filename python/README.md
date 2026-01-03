@@ -1,6 +1,6 @@
-# Battlecode 2025 Scaffold - Python
+# Battlecode 2026 Scaffold - Python
 
-This is the Battlecode 2025 Python scaffold, containing an `examplefuncsplayer`. Read https://play.battlecode.org/bc25python/quick_start !
+This is the Battlecode 2026 Python scaffold, containing an `examplefuncsplayer`. Read https://play.battlecode.org/bc26/quick_start !
 
 
 ### Project Structure

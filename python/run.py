@@ -104,7 +104,7 @@ ENGINE_VER_DATA = {
     "name": "engine",
     "file": "engine_version.txt",
     "get_property": lambda: "release_version_saturn" if properties["on_saturn"] else "release_version_public",
-    "get_url": lambda version: f"maven/org/battlecode/battlecode25-python/{version}/battlecode.tar.gz",
+    "get_url": lambda version: f"maven/org/battlecode/battlecode26-python/{version}/battlecode.tar.gz",
     "get_filename": lambda version: "battlecode.tar.gz",
     "install": install_engine
 }
@@ -112,8 +112,8 @@ CLIENT_VER_DATA = {
     "name": "client",
     "file": "client_version.txt",
     "get_property": lambda: "release_version_client",
-    "get_url": lambda version: f"maven/org/battlecode/battlecode25-client-{client_platform}-{'electron' if properties['compatibility_client'] else 'tauri'}/{version}/battlecode25-client-{client_platform}-{'electron' if properties['compatibility_client'] else 'tauri'}-{version}.zip",
-    "get_filename": lambda version: "battlecode25-client.zip",
+    "get_url": lambda version: f"maven/org/battlecode/battlecode26-client-{client_platform}-{'electron' if properties['compatibility_client'] else 'tauri'}/{version}/battlecode26-client-{client_platform}-{'electron' if properties['compatibility_client'] else 'tauri'}-{version}.zip",
+    "get_filename": lambda version: "battlecode26-client.zip",
     "install": install_client
 }
 
@@ -203,8 +203,7 @@ def set_local_version(ver_data, new_version: str):
 
 def get_server_version(ver_data) -> str | None:
     """Fetch the latest version from the server"""
-    url = "https://api.battlecode.org/api/episode/e/bc25python/?format=json"
-    #url = "https://api.battlecode.org/api/episode/e/bc24/?format=json"
+    url = "https://api.battlecode.org/api/episode/e/bc26/?format=json"
     try:
         with urllib.request.urlopen(url) as response:
             parsed = json.loads(response.read())
@@ -273,7 +272,7 @@ def verify_package(player_dir):
 
     try:
         # Try compiling the bot
-        from battlecode25 import CodeContainer
+        from battlecode26 import CodeContainer
         container = CodeContainer.from_directory(player_dir)
     except Exception as e:
         print(f"Compile failed! {e}")
@@ -298,7 +297,7 @@ def run_script(script_path, args=None):
 def run_game(args):
     """Run a battlecode game"""
     # Import at run time so that we can ensure the package is installed first
-    from battlecode25 import run_game, RunGameArgs
+    from battlecode26 import run_game, RunGameArgs
 
     print(f"Playing game between {args.p1} and {args.p2} on {args.maps}")
 

@@ -1,9 +1,8 @@
-# Battlecode 2025 Scaffold
+# Battlecode 2026 Scaffold
 
-This is the Battlecode 2025 scaffold, containing starter code and useful scripts for running and compiling your bot.
+This is the Battlecode 2026 scaffold, containing starter code and useful scripts for running and compiling your bot.
 
-**We are using a rewritten version of the client this year, so please let teh devs know 
-if you encounter any issues or have any feedback!**
+**Please let teh devs know if you encounter any issues or have any feedback!**
 
 ### Project Structure
 
@@ -13,4 +12,5 @@ if you encounter any issues or have any feedback!**
 - `python/`
    Scaffold for the Python engine. If Python is your preferred language, please use this subdirectory and follow the README file included there.
 
-Keep in mind, Python is **EXPERIMENTAL**, and not eligible to participate against other java bots. Please see the website for more details.
+Keep in mind, Python is **EXPERIMENTAL**, so let us know if there are any issues. Remember that abusing any exploits
+is strictly against the rules, and your account/team will be subject to removal.
