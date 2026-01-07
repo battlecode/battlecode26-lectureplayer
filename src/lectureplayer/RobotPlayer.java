@@ -27,7 +27,9 @@ public class RobotPlayer {
                 MapLocation myLoc = rc.getLocation();
 
                 if (rc.getType().isRatKingType()) {
-                    if (numRatsSpawned < 15 || rc.getAllCheese() > rc.getCurrentRatCost() + 150) {
+                    int currentCost = rc.getCurrentRatCost();
+
+                    if (currentCost <= 10 || rc.getAllCheese() > currentCost + 2500) {
                         MapLocation[] potentialSpawnLocations = rc.getAllLocationsWithinRadiusSquared(rc.getLocation(), 8);
                         
                         for (MapLocation loc : potentialSpawnLocations) {
@@ -39,13 +41,15 @@ public class RobotPlayer {
                         }
                     }
 
+                    moveRandom(rc);
+
                     // TODO make more efficient and expand communication in the communication lecture
                     rc.writeSharedArray(0, myLoc.x);
                     rc.writeSharedArray(1, myLoc.y);
                 } else {
                     switch (currentState) {
                         case INITIALIZE:
-                            if (rc.getRoundNum() < 30) {
+                            if (rc.getRoundNum() < 30 || rc.getCurrentRatCost() <= 10) {
                                 currentState = State.FIND_CHEESE;
                             } else {
                                 currentState = State.EXPLORE_AND_ATTACK;
@@ -53,6 +57,20 @@ public class RobotPlayer {
 
                             break;
                         case FIND_CHEESE:
+                            // search for cheese
+                            MapInfo[] nearbyInfos = rc.senseNearbyMapInfos();
+
+                            for (MapInfo info : nearbyInfos) {
+                                if (info.getCheeseAmount() > 0) {
+                                    Direction toCheese = myLoc.directionTo(info.getMapLocation());
+
+                                    if (rc.canTurn()) {
+                                        rc.turn(toCheese);
+                                        break;
+                                    }
+                                }
+                            }
+
                             for (Direction dir : directions) {
                                 MapLocation loc = myLoc.add(dir);
                                 
@@ -70,14 +88,19 @@ public class RobotPlayer {
                         case RETURN_TO_KING:
                             MapLocation kingLoc = new MapLocation(rc.readSharedArray(0), rc.readSharedArray(1));
                             Direction toKing = myLoc.directionTo(kingLoc);
+                            MapLocation nextLoc = myLoc.add(toKing);
+
+                            if (rc.canTurn()) {
+                                rc.turn(toKing);
+                            }
+
+                            if (rc.canRemoveDirt(nextLoc)) {
+                                rc.removeDirt(nextLoc);
+                            }
 
                             // TODO replace with pathfinding for the pathfinding lecture
                             if (rc.canMove(toKing)) {
                                 rc.move(toKing);
-                            }
-
-                            if (rc.canTurn()) {
-                                rc.turn(toKing);
                             }
 
                             int rawCheese = rc.getRawCheese();
