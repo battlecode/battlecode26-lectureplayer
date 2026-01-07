@@ -77,7 +77,7 @@ public class RobotPlayer {
                                 if (rc.canPickUpCheese(loc)) {
                                     rc.pickUpCheese(loc);
 
-                                    if (rc.getRawCheese() >= 5) {
+                                    if (rc.getRawCheese() >= 10) {
                                         currentState = State.RETURN_TO_KING;
                                     }
                                 }
@@ -104,11 +104,28 @@ public class RobotPlayer {
                             }
 
                             int rawCheese = rc.getRawCheese();
-                            
-                            if (rc.canTransferCheese(kingLoc, rawCheese)) {
-                                System.out.println("Transferred " + rawCheese + " cheese to king at " + kingLoc + ": I'm at " + myLoc);
-                                rc.transferCheese(kingLoc, rawCheese);
+
+                            if (rawCheese == 0) {
                                 currentState = State.FIND_CHEESE;
+                                break;
+                            }
+                            
+                            if (rc.canSenseLocation(kingLoc)) {
+                                RobotInfo[] kingLocations = rc.senseNearbyRobots(kingLoc, 8, rc.getTeam());
+
+                                for (RobotInfo robotInfo : kingLocations) {
+                                    if (robotInfo.getType().isRatKingType()) {
+                                        MapLocation actualKingLoc = robotInfo.getLocation();
+
+                                        if (rc.canTransferCheese(actualKingLoc, rawCheese)) {
+                                            System.out.println("Transferred " + rawCheese + " cheese to king at " + kingLoc + ": I'm at " + myLoc);
+                                            rc.transferCheese(actualKingLoc, rawCheese);
+                                            currentState = State.FIND_CHEESE;
+                                        }
+
+                                        break;
+                                    }
+                                }
                             }
 
                             break;
@@ -135,9 +152,12 @@ public class RobotPlayer {
                         case EXPLORE_AND_ATTACK:
                             moveRandom(rc);
 
-                            if (rc.canAttack(myLoc)) {
-                                System.out.println("Attacking at " + myLoc);
-                                rc.attack(myLoc);
+                            for (Direction dir : directions) {
+                                MapLocation loc = myLoc.add(dir);
+
+                                if (rc.canAttack(loc)) {
+                                    rc.attack(loc);
+                                }
                             }
 
                             if (rand.nextDouble() < 0.1) {
