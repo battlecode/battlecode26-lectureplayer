@@ -2,25 +2,32 @@ package lectureplayer;
 
 import battlecode.common.*;
 
+import java.util.Random;
+
 public class RobotPlayer {
     public static enum State {
         INITIALIZE,
         FIND_CHEESE,
         RETURN_TO_KING,
         BUILD_TRAPS,
-        EXPLORE,
-        ATTACK,
+        EXPLORE_AND_ATTACK,
     }
+
+    public static Random rand = new Random(1092);
 
     public static State currentState = State.INITIALIZE;
 
     public static int numRatsSpawned = 0;
 
+    public static Direction[] directions = Direction.values();
+
     public static void run(RobotController rc) {
         while (true) {
             try {
+                MapLocation myLoc = rc.getLocation();
+
                 if (rc.getType().isRatKingType()) {
-                    if (numRatsSpawned < 10) {
+                    if (numRatsSpawned < 15 || rc.getAllCheese() > rc.getCurrentRatCost() + 150) {
                         MapLocation[] potentialSpawnLocations = rc.getAllLocationsWithinRadiusSquared(rc.getLocation(), 8);
                         
                         for (MapLocation loc : potentialSpawnLocations) {
@@ -31,30 +38,89 @@ public class RobotPlayer {
                             }
                         }
                     }
+
+                    // TODO make more efficient and expand communication in the communication lecture
+                    rc.writeSharedArray(0, myLoc.x);
+                    rc.writeSharedArray(1, myLoc.y);
                 } else {
                     switch (currentState) {
                         case INITIALIZE:
-                            if (rc.getRoundNum() < 50) {
+                            if (rc.getRoundNum() < 30) {
                                 currentState = State.FIND_CHEESE;
                             } else {
-                                currentState = State.EXPLORE;
+                                currentState = State.EXPLORE_AND_ATTACK;
                             }
 
                             break;
                         case FIND_CHEESE:
-                            // Logic to find cheese
+                            for (Direction dir : directions) {
+                                MapLocation loc = myLoc.add(dir);
+                                
+                                if (rc.canPickUpCheese(loc)) {
+                                    rc.pickUpCheese(loc);
+
+                                    if (rc.getRawCheese() >= 5) {
+                                        currentState = State.RETURN_TO_KING;
+                                    }
+                                }
+                            }
+
+                            moveRandom(rc);
                             break;
                         case RETURN_TO_KING:
-                            // Logic to return to king
+                            MapLocation kingLoc = new MapLocation(rc.readSharedArray(0), rc.readSharedArray(1));
+                            Direction toKing = myLoc.directionTo(kingLoc);
+
+                            // TODO replace with pathfinding for the pathfinding lecture
+                            if (rc.canMove(toKing)) {
+                                rc.move(toKing);
+                            }
+
+                            if (rc.canTurn()) {
+                                rc.turn(toKing);
+                            }
+
+                            int rawCheese = rc.getRawCheese();
+                            
+                            if (rc.canTransferCheese(kingLoc, rawCheese)) {
+                                System.out.println("Transferred " + rawCheese + " cheese to king at " + kingLoc + ": I'm at " + myLoc);
+                                rc.transferCheese(kingLoc, rawCheese);
+                                currentState = State.FIND_CHEESE;
+                            }
+
                             break;
                         case BUILD_TRAPS:
-                            // Logic to build traps
+                            for (Direction dir : directions) {
+                                MapLocation loc = myLoc.add(dir);
+                                boolean catTraps = rand.nextBoolean();
+                                
+                                if (catTraps && rc.canPlaceCatTrap(loc)) {
+                                    System.out.println("Built cat trap at " + loc);
+                                    rc.placeCatTrap(loc);
+                                } else if (rc.canPlaceRatTrap(loc)) {
+                                    System.out.println("Built rat trap at " + loc);
+                                    rc.placeRatTrap(loc);
+                                }
+                            }
+
+                            if (rand.nextDouble() < 0.1) {
+                                currentState = State.EXPLORE_AND_ATTACK;
+                            }
+
+                            moveRandom(rc);
                             break;
-                        case EXPLORE:
-                            // Exploration logic
-                            break;
-                        case ATTACK:
-                            // Attack logic
+                        case EXPLORE_AND_ATTACK:
+                            moveRandom(rc);
+
+                            if (rc.canAttack(myLoc)) {
+                                System.out.println("Attacking at " + myLoc);
+                                rc.attack(myLoc);
+                            }
+
+                            if (rand.nextDouble() < 0.1) {
+                                currentState = State.BUILD_TRAPS;
+                            }
+
                             break;
                     }
                 }
@@ -66,6 +132,24 @@ public class RobotPlayer {
                 e.printStackTrace();
             } finally {
                 Clock.yield();
+            }
+        }
+    }
+
+    public static void moveRandom(RobotController rc) throws GameActionException {
+        MapLocation forwardLoc = rc.adjacentLocation(rc.getDirection());
+
+        if (rc.canRemoveDirt(forwardLoc)) {
+            rc.removeDirt(forwardLoc);
+        }
+
+        if (rc.canMoveForward()) {
+            rc.moveForward();
+        } else {
+            Direction random = directions[rand.nextInt(directions.length)];
+
+            if (rc.canTurn()) {
+                rc.turn(random);
             }
         }
     }
