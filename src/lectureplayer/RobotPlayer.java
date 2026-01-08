@@ -18,7 +18,7 @@ public class RobotPlayer {
     public static State currentState = State.INITIALIZE;
 
     public static int numRatsSpawned = 0;
-    public static int turnsSinceCarry = 0;
+    public static int turnsSinceCarry = 1000;
 
     public static Direction[] directions = Direction.values();
 
@@ -211,6 +211,7 @@ public class RobotPlayer {
 
             if (rc.canCarryRat(loc)) {
                 rc.carryRat(loc);
+                turnsSinceCarry = 0;
             }
 
             if (rc.canAttack(loc)) {
