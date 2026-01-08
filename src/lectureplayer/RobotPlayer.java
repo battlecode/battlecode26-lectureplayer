@@ -77,7 +77,7 @@ public class RobotPlayer {
         } else {
             Direction random = directions[rand.nextInt(directions.length)];
 
-            if (rc.canTurn()) {
+            if (rc.canTurn(random)) {
                 rc.turn(random);
             }
         }
@@ -113,7 +113,7 @@ public class RobotPlayer {
             if (info.getCheeseAmount() > 0) {
                 Direction toCheese = rc.getLocation().directionTo(info.getMapLocation());
 
-                if (rc.canTurn()) {
+                if (rc.canTurn(toCheese)) {
                     rc.turn(toCheese);
                     break;
                 }
@@ -140,7 +140,7 @@ public class RobotPlayer {
         Direction toKing = rc.getLocation().directionTo(kingLoc);
         MapLocation nextLoc = rc.getLocation().add(toKing);
 
-        if (rc.canTurn()) {
+        if (rc.canTurn(toKing)) {
             rc.turn(toKing);
         }
 
