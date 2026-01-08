@@ -88,12 +88,13 @@ public class RobotPlayer {
                     System.out.println("Turn " + turnCount + ": Trying to move " + rc.getDirection());
                     rc.moveForward();
                 } else {
-                    System.out.println("couldn't move forward on turn " + turnCount + " at location " + rc.getLocation() + " facing " + rc.getDirection());
+                    System.out.println("Couldn't move forward on turn " + turnCount + " at location " + rc.getLocation() + " facing " + rc.getDirection());
                     // If we can't move forward, try to turn a random direction.
                     int randomDirection = rng.nextInt(8);
+                    Direction dir = directions[randomDirection];
                     
-                    if (rc.canTurn()) {
-                        rc.turn(directions[randomDirection]);
+                    if (rc.canTurn(dir)) {
+                        rc.turn(dir);
                     }
                 }
             } catch (GameActionException e) {
