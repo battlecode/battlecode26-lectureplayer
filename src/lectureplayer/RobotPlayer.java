@@ -112,15 +112,19 @@ public class RobotPlayer {
     public static void runRatKing(RobotController rc) throws GameActionException {
         int currentCost = rc.getCurrentRatCost();
 
-        if (currentCost <= 10 || rc.getAllCheese() > currentCost + 2500) {
-            MapLocation[] potentialSpawnLocations = rc.getAllLocationsWithinRadiusSquared(rc.getLocation(), 8);
-            
-            for (MapLocation loc : potentialSpawnLocations) {
-                if (rc.canBuildRat(loc)) {
-                    rc.buildRat(loc);
-                    numRatsSpawned++;
-                    break;
-                }
+        MapLocation[] potentialSpawnLocations = rc.getAllLocationsWithinRadiusSquared(rc.getLocation(), 8);
+        boolean spawn = currentCost <= 10 || rc.getAllCheese() > currentCost + 2500;
+
+        for (MapLocation loc : potentialSpawnLocations) {
+            if (spawn && rc.canBuildRat(loc)) {
+                rc.buildRat(loc);
+                numRatsSpawned++;
+                break;
+            }
+
+            if (rc.canPickUpCheese(loc)) {
+                rc.pickUpCheese(loc);
+                break;
             }
         }
 
