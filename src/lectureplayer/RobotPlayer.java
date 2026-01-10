@@ -310,7 +310,6 @@ public class RobotPlayer {
             }
 
             int dirOrdinal = getSqueakValue(rawSqueak);
-            System.out.println(dirOrdinal);
             Direction toCat = directions[dirOrdinal];
             Direction away = toCat.opposite();
 
@@ -373,7 +372,6 @@ public class RobotPlayer {
             if (rc.getLocation().distanceSquaredTo(nearbyCats[0].getLocation()) >= 17) {
                 rc.setIndicatorString("Found a cat at " + nearbyCats[0].getLocation());
                 Direction toCat = rc.getLocation().directionTo(nearbyCats[0].getLocation());
-                System.out.println(toCat.ordinal());
                 rc.squeak(getSqueak(SqueakType.CAT_FOUND, toCat.ordinal()));
             } else {
                 rc.setIndicatorString("Cat is too close! Running away!");
