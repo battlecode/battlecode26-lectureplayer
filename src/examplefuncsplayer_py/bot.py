@@ -1,5 +1,5 @@
 
-from battlecode import *
+from battlecode26 import *
 from random import randint, seed
 
 seed(6147)
