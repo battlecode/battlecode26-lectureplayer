@@ -2,18 +2,7 @@ package examplefuncsplayer;
 
 import battlecode.common.*;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Random;
-import java.util.Set;
-
-import java.util.EnumMap;
-import java.util.List;
-import java.util.PriorityQueue;
-import java.util.stream.Stream;
-
 
 /**
  * RobotPlayer is the class that describes your main robot strategy.
@@ -92,7 +81,7 @@ public class RobotPlayer {
                     // If we can't move forward, try to turn a random direction.
                     int randomDirection = rng.nextInt(8);
                     Direction dir = directions[randomDirection];
-                    
+
                     if (rc.canTurn(dir)) {
                         rc.turn(dir);
                     }

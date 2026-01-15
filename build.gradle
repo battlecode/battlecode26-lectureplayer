@@ -59,12 +59,16 @@ eclipse {
 }
 
 
-//////// Versions ////////
+//////// Versions and Files ////////
 
 ext.versions = [
   battlecodeEngine: new File(projectDir, "engine_version.txt").text.trim(),
   battlecodeClient: new File(projectDir, "client_version.txt").text.trim()
 ]
+
+ext.python = System.properties['os.name'].toLowerCase().contains('windows') ? 'python' : 'python3'
+ext.pythonScript = new File(projectDir, "run.py")
+ext.botDirectory = new File(projectDir, "src")
 
 configurations.all {
   resolutionStrategy.cacheDynamicVersionsFor 60, 'seconds'
@@ -72,7 +76,6 @@ configurations.all {
 
 static String[] getVersionsFromWeb(boolean onSaturn) {
   String[] urls = ["https://api.battlecode.org/api/episode/e/bc26/?format=json"]
-  //String[] urls = ["https://api.battlecode.org/api/episode/e/bc24/?format=json"]
   String engineVersion = null
   String clientVersion = null
   for (String url : urls) {
@@ -147,6 +150,13 @@ task update {
   }
 }
 
+task installPyLocal(type: Exec) {
+  description 'Updates configurations to use an already downloaded version of the Python engine.'
+  group 'battlecode'
+  commandLine python, pythonScript.absolutePath, 'install_current_version',
+    '--on-saturn', (project.findProperty("onSaturn") ?: "false").toString(),
+    '--force-reinstall', (project.findProperty("forceReinstallPy") ?: "false").toString()
+}
 
 //////// Dependencies ////////
 
@@ -266,6 +276,15 @@ task verify(type: JavaExec) {
 
 //////// Running ////////
 
+task downloadPyPackage(type: Exec) {
+  description 'Downloads Python dependencies for running matches.'
+  group 'battlecode'
+  commandLine python, pythonScript.absolutePath, 'update',
+        '--on-saturn', (project.findProperty("onSaturn") ?: "false").toString(),
+        '--debug', (project.findProperty("debug") ?: "false").toString(),
+        '--force-reinstall', (project.findProperty("forceReinstallPy") ?: "false").toString()
+}
+
 def truncateString(String input, int maxLength) {
   if (input.length() > maxLength) {
     return input.substring(0, maxLength)
@@ -277,11 +296,7 @@ def defaultClassLocation = sourceSets.main.output.classesDirs.getAsPath()
 def defaultReplayName = truncateString(project.property('teamA') + '-vs-' + project.property('teamB') + '-on-' + project.property('maps'), 80)
 def defaultReplayFile = 'matches/' + defaultReplayName + '.bc26'
 
-task run(type: JavaExec) {
-  description 'Runs a match without starting the client.'
-  group 'battlecode'
-  dependsOn build
-
+task runJavaLocal(type: JavaExec) {
   mainClass = 'battlecode.server.Main'
   classpath = sourceSets.main.runtimeClasspath
   args = ['-c=-']
@@ -301,6 +316,8 @@ task run(type: JavaExec) {
     '-Dbc.engine.show-indicators=' + (project.findProperty('showIndicators') ?: 'true'),
     '-Dbc.game.team-a=' + project.property('teamA'),
     '-Dbc.game.team-b=' + project.property('teamB'),
+    '-Dbc.game.team-a.language=' + (project.findProperty('languageA') ?: 'java'),
+    '-Dbc.game.team-b.language=' + (project.findProperty('languageB') ?: 'java'),
     '-Dbc.game.team-a.url=' + (project.findProperty('classLocationA') ?: defaultClassLocation),
     '-Dbc.game.team-b.url=' + (project.findProperty('classLocationB') ?: defaultClassLocation),
     '-Dbc.game.team-a.package=' + (project.findProperty('packageNameA') ?: project.property('teamA')),
@@ -310,6 +327,48 @@ task run(type: JavaExec) {
     '-Dbc.server.alternate-order=' + project.property('alternateOrder'),
     '-Dbc.server.save-file=' + (project.findProperty('replay') ?: defaultReplayFile),
   ]
+}
+
+task runJava(dependsOn: runJavaLocal) {}
+
+task runPyLocal(type: Exec, dependsOn: installPyLocal) {
+  commandLine python, '-m', 'battlecode26',
+    '--teamA', project.findProperty('languageA') == 'python' ? project.property('teamA') : '/',
+    '--teamB', project.findProperty('languageB') == 'python' ? project.property('teamB') : '/',
+    '--dirA', botDirectory.absolutePath,
+    '--dirB', botDirectory.absolutePath,
+    '--new-process'
+}
+
+task runPy(type: Exec) {
+  mustRunAfter downloadPyPackage
+  commandLine python, '-m', 'battlecode26',
+    '--teamA', project.findProperty('languageA') == 'python' ? project.property('teamA') : '/',
+    '--teamB', project.findProperty('languageB') == 'python' ? project.property('teamB') : '/',
+    '--dirA', botDirectory.absolutePath,
+    '--dirB', botDirectory.absolutePath,
+    '--new-process'
+}
+
+task runLocal {
+  description 'Runs a match locally (no updates) without starting the client.'
+  group 'battlecode'
+  dependsOn runJavaLocal
+}
+
+task run {
+  description 'Runs a match without starting the client.'
+  group 'battlecode'
+  dependsOn runJava
+}
+
+if (project.findProperty("languageA") == "python" || project.findProperty("languageB") == "python") {
+  run.dependsOn downloadPyPackage
+  run.dependsOn runPy
+  runJava.mustRunAfter runPy
+  runLocal.dependsOn installPyLocal
+  runLocal.dependsOn runPyLocal
+  runJavaLocal.mustRunAfter runPyLocal
 }
 
 
